@@ -18,9 +18,9 @@ def questradeLogIn(questradeDriver, username = "qfx_f3cee", password = "m58jf9")
 
 def toggleOpenPositionsWindow(questradeDriver, action):
     if action.lower() == "open":
-        toggle_open_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[2]/div[1]/div[2]/div/div[3]/div/section/div[1]/button")))
+        toggle_open_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[2]/div[2]/div[2]/div/div[3]/div/section/nav/button")))
     if action.lower() == "close":
-        toggle_open_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[2]/div[1]/div[2]/div/div[2]/div/section/div[1]/button")))
+        toggle_open_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/section/nav/button")))
     toggle_open_pos_button.click()
     
 def toggleInstrumentsWindow(questradeDriver):
@@ -49,9 +49,7 @@ def getOpenPositions(questradeDriver):
     rows = open_position_table.find_elements(by=By.CLASS_NAME, value="draggable")
     for i, row in enumerate(rows):
         if i < len(rows) - 1:
-            symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[2]/div/section/div[2]/div/' + 
-                            f'div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/div/div/' +
-                            f'div[{i+2}]/div/div[2]/div/div/div/div[2]/div/div/div')
+            symbol_xpath = (f'/html/body/div[1]/div[2]/div[2]/div[2]/div/div[3]/div/section/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/div/div/div[{i+2}]/div/div[2]/div/div/div/div[2]/div/div/div')
             symbols.append(row.find_element(by=By.XPATH, value=symbol_xpath).text[:7])
         else:
             symbols.append("")

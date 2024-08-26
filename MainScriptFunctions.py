@@ -23,7 +23,6 @@ def mainScript(signal_timeframe, username, password, method, output_actions = Tr
 
     # Get bid/ask prices
     bid_ask_prices = getBidAsk(driver)
-    print(bid_ask_prices)
 
     # Get Open Positions
     open_positions = getOpenPositions(driver)
