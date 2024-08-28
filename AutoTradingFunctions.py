@@ -53,7 +53,7 @@ def getOpenPositions(questradeDriver):
         symbols.append(row.find_element(by=By.CLASS_NAME, value="instrument").get_attribute("title"))
         positions.append(row.find_element(by=By.CLASS_NAME, value="tst-col-item-ls").get_attribute("title"))
         profits.append(row.find_elements(by=By.CLASS_NAME, value="directional-number_v5RPy")[1].text)
-        
+
     open_positions = pd.DataFrame({
         "Pair": symbols,
         "Position": positions,
@@ -144,17 +144,15 @@ def scrapeInvestingComSignals():
                 "Weekly": weekly,
                 "Monthly": monthly
             })
-            signals.to_csv("G:/My Drive/University of Waterloo Files/Applied Machine Learning and Artificial Intelligence/Projects/AutoTradingBot/.gitignore/FXStreetSignals/Signals " 
-                        + str(datetime.now())[:19].replace(":", "-") + ".csv", index = False)
+            signals.to_csv("./Signals/FXStreetSignals/ " + str(datetime.now())[:19].replace(":", "-") + ".csv", index = False)
             return signals
         except:
             driverInvestingCom.quit()
             print("5 Minute Timer Reached: Rerunning scrapeInvestingComSignals()")
 
-def loadInvestingComSignals():
-    file_path = "G:/My Drive/University of Waterloo Files/Applied Machine Learning and Artificial Intelligence/Projects/AutoTradingBot/.gitignore/FXStreetSignals"
-    latest_signals = os.listdir(file_path)[-1]
-    return pd.read_csv(file_path + "/" + latest_signals)
+def loadInvestingComSignals(filepath):
+    latest_signals = os.listdir(filepath)[-1]
+    return pd.read_csv(filepath + "/" + latest_signals)
 
 def getActions(relevant_pairs, open_positions, signals, timeframe = "Daily"):
     actual_open_positions = open_positions.copy()
@@ -180,8 +178,7 @@ def getActions(relevant_pairs, open_positions, signals, timeframe = "Daily"):
         else:
             action.append("Hold")
     position_signals["Action"] = action
-    position_signals.to_csv("G:/My Drive/University of Waterloo Files/Applied Machine Learning and Artificial Intelligence/Projects/AutoTradingBot/.gitignore/ExecutedTrades/" 
-                            + timeframe + "Actions At" + str(datetime.now())[:19].replace(":", "-") + ".csv", index = False)
+    position_signals.to_csv("./ExecutedTrades/" + timeframe + "Actions At" + str(datetime.now())[:19].replace(":", "-") + ".csv", index = False)
     return position_signals
 
 def calculateQuantity(pair, desired_exposure, bid_ask_table):
@@ -218,31 +215,28 @@ def closePosition(questradeDriver, symbol_to_close, pos_of_symbol_to_close):
     open_position_table = questradeDriver.find_elements(by=By.CLASS_NAME, value="focusmanager--no-outline")[2]
     rows = open_position_table.find_elements(by=By.CLASS_NAME, value="draggable")
     for i, row in enumerate(rows):
-        symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[2]/div/section/div[2]/' + 
-                        f'div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/' + 
-                        f'div/div/div[{i+2}]/div/div[2]/div/div/div/div[2]/div/div/div')
-        row_symbol = row.find_element(by=By.XPATH, value=symbol_xpath).text
+        # symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[2]/div/section/div[2]/' + 
+        #                 f'div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/' + 
+        #                 f'div/div/div[{i+2}]/div/div[2]/div/div/div/div[2]/div/div/div')
+        # row_symbol = row.find_element(by=By.XPATH, value=symbol_xpath).text
+        row_symbol = row.find_element(by=By.CLASS_NAME, value="instrument").get_attribute("title")
         if row_symbol == symbol_to_close:
-            button_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[2]/div/section/div[2]' + 
-                            f'/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div' + 
-                            f'/div/div/div[{i+2}]/div/div[18]/div/div/button')
+            button_xpath = (f'/html/body/div[1]/div[2]/div[2]/div[2]/div/div[2]/div/section/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/div/div/div[{i+2}]/div/div[18]/div/div/button')
             close_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, button_xpath)))
             close_button.click()
             if pos_of_symbol_to_close == "Long":
-                close_pos_button_xpath = ("/html/body/div[4]/div[2]/div[1]/span/div/div/div[2]/div/div[1]/" +
-                                          "div/div[4]/div/div[4]/div/div[1]/div[1]/div[1]/div[1]/div/div")
+                close_pos_button_xpath = ("/html/body/div[4]/div/div[2]/div/div/div/div[2]/div/div/div[3]/div/div[4]/div/div[1]/div[1]/div[1]/div/div")
                 close_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, close_pos_button_xpath)))
                 close_pos_button.click()
                 time.sleep(1)
                 close_pos_button.click()
             else:
-                close_pos_button_xpath = ("/html/body/div[4]/div[2]/div[1]/span/div/div/div[2]/div/div[1]/" +
-                                          "div/div[4]/div/div[4]/div/div[1]/div[1]/div[1]/div[3]/div/div")
+                close_pos_button_xpath = ("/html/body/div[4]/div/div[2]/div/div/div/div[2]/div/div/div[3]/div/div[4]/div/div[1]/div[1]/div[3]/div/div")
                 close_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, close_pos_button_xpath)))
                 close_pos_button.click()
                 time.sleep(1)
                 close_pos_button.click()
-            confirm_button_xpath = "/html/body/div[4]/div/div/div/div[2]/div[2]/div/button"
+            confirm_button_xpath = "/html/body/div[4]/div/div/div/div/div[2]/div/button"
             confirm_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, confirm_button_xpath)))
             confirm_button.click()
             break
@@ -255,15 +249,14 @@ def openPosition(questradeDriver, symbol_to_open, action, amount, bid_ask_prices
         instrument_table = questradeDriver.find_elements(by=By.CLASS_NAME, value="focusmanager--no-outline")[0]
         rows = instrument_table.find_elements(by=By.CLASS_NAME, value="draggable")
         for i, row in enumerate(rows):
-            symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[1]/div/div[1]/section/div[2]' +
-                            f'/div/div/div[3]/div/div/div/div[2]/div/div[2]/div/div/div/div/div/div/div/' +
-                            f'div[{i+1}]/div/div[1]/div/div/div/div[2]/div/div/div')
-            row_symbol = row.find_element(by=By.XPATH, value=symbol_xpath).text
+            # symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[1]/div/div[1]/section/div[2]' +
+            #                 f'/div/div/div[3]/div/div/div/div[2]/div/div[2]/div/div/div/div/div/div/div/' +
+            #                 f'div[{i+1}]/div/div[1]/div/div/div/div[2]/div/div/div')
+            # row_symbol = row.find_element(by=By.XPATH, value=symbol_xpath).text
+            row_symbol = row.find_element(by=By.CLASS_NAME, value="instrument__name").text
             quantity = calculateQuantity(row_symbol, amount, bid_ask_prices)
             if row_symbol == symbol_to_open:
-                open_pos_button_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[1]/div/div[1]' +
-                                         f'/section/div[2]/div/div/div[3]/div/div/div/div[2]/div/div[2]' +
-                                         f'/div/div/div/div/div/div/div/div[{i+1}]/div/div[3]/button')
+                open_pos_button_xpath = (f'/html/body/div[1]/div[2]/div[2]/div[2]/div/div[1]/div/div[1]/section/div/div/div/div[3]/div/div/div/div[2]/div/div[2]/div/div/div/div/div/div/div/div[{i+1}]/div/div[3]/button')
                 open_pos_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, open_pos_button_xpath)))
                 open_pos_button.click()
                 try:
@@ -273,31 +266,26 @@ def openPosition(questradeDriver, symbol_to_open, action, amount, bid_ask_prices
                     close_muw_button.click()
                 except:
                     pass
-                imput_amount_xpath = ("/html/body/div[4]/div[2]/div[1]/span/div/div/div[2]/div/div[2]/div" +
-                                      "/div/div/div[2]/div[2]/div/div[3]/div/div[1]/div[2]/div/div[2]/input")
-                input_amount = WebDriverWait(questradeDriver, 60).until(EC.presence_of_element_located((By.XPATH, imput_amount_xpath)))
+                input_amount_xpath = ("/html/body/div[4]/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/div[3]/div/div[3]/div/div[1]/div[2]/div/div[2]/input")
+                input_amount = WebDriverWait(questradeDriver, 60).until(EC.presence_of_element_located((By.XPATH, input_amount_xpath)))
                 time.sleep(1)
                 input_amount.send_keys(str(quantity))
                 time.sleep(2)
                 if action == "Open Long" or action == "Buy":
-                    open_long_button_xpath = ('/html/body/div[4]/div[2]/div[1]/span/div/div/div[2]/div' +
-                                              '/div[2]/div/div/div/div[2]/div[2]/div/div[4]/div/div[1]' +
-                                              '/div[1]/div[1]/div[3]/div/div')
+                    open_long_button_xpath = ('/html/body/div[4]/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/div[3]/div/div[4]/div/div[1]/div[1]/div[3]/div/div')
                     open_long_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, open_long_button_xpath)))
                     open_long_button.click()
                     time.sleep(1)
                     open_long_button.click()
                 if action == "Open Short" or action == "Sell":
-                    open_short_button_xpath = ('/html/body/div[4]/div[2]/div[1]/span/div/div/div[2]/div' +
-                                               '/div[2]/div/div/div/div[2]/div[2]/div/div[4]/div/div[1]' +
-                                               '/div[1]/div[1]/div[1]/div/div')
+                    open_short_button_xpath = ('/html/body/div[4]/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/div[3]/div/div[4]/div/div[1]/div[1]/div[1]/div/div')
                     open_short_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, open_short_button_xpath)))
                     open_short_button.click()
                     time.sleep(1)
                     open_short_button.click()
                     # time.sleep(9999)
-                close_trade_window_xpath = "/html/body/div[4]/div[2]/div[1]/span/div/div/div[2]/div/div[1]/header/button"
-                confirm_button_xpath = "/html/body/div[5]/div/div/div/div[2]/div[2]/div/button"
+                close_trade_window_xpath = "/html/body/div[4]/div/div[2]/div/div/div/div[2]/div/div[1]/div[2]/button"
+                confirm_button_xpath = "/html/body/div[5]/div/div/div/div/div[2]/div/button"
                 close_trade_window = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, close_trade_window_xpath)))
                 confirm_button = WebDriverWait(questradeDriver, 60).until(EC.element_to_be_clickable((By.XPATH, confirm_button_xpath)))
                 confirm_button.click()
@@ -309,10 +297,11 @@ def openPosition(questradeDriver, symbol_to_open, action, amount, bid_ask_prices
         instrument_table = questradeDriver.find_elements(by=By.CLASS_NAME, value="focusmanager--no-outline")[0]
         rows = instrument_table.find_elements(by=By.CLASS_NAME, value="draggable")
         for i, row in enumerate(rows):
-            symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[1]/div/div[1]/section/div[2]' +
-                            f'/div/div/div[3]/div/div/div/div[2]/div/div[2]/div/div/div/div/div/div/div/' +
-                            f'div[{i+1}]/div/div[1]/div/div/div/div[2]/div/div/div')
-            row_symbol = row.find_element(by=By.XPATH, value=symbol_xpath).text
+            # symbol_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[1]/div/div[1]/section/div[2]' +
+            #                 f'/div/div/div[3]/div/div/div/div[2]/div/div[2]/div/div/div/div/div/div/div/' +
+            #                 f'div[{i+1}]/div/div[1]/div/div/div/div[2]/div/div/div')
+            # row_symbol = row.find_element(by=By.XPATH, value=symbol_xpath).text
+            row_symbol = row.find_element(by=By.CLASS_NAME, value="instrument__name").get_attribute("title")
             quantity = calculateQuantity(row_symbol, amount, bid_ask_prices)
             if row_symbol == symbol_to_open:
                 open_pos_button_xpath = (f'/html/body/div[1]/div[2]/div[1]/div[2]/div/div[1]/div/div[1]' +
@@ -368,28 +357,31 @@ def updatePositions(questradeDriver, close_positions, open_long_positions, open_
                     take_profit = None, stop_loss = None):
     # Close Positions
     for i in range(close_positions.shape[0]):
-        # if close_positions["Position"][i] == "Square":
-        #     continue
+        print(f"Closing {close_positions["Pair"][i]}")
         closePosition(questradeDriver, close_positions["Pair"][i], close_positions["Position"][i])
         time.sleep(1)
     # Open Long Positions
     for i in range(open_long_positions.shape[0]):
+        print(f"Going Long on {open_long_positions["Pair"][i]}")
         openPosition(questradeDriver, open_long_positions["Pair"][i], open_long_positions["Action"][i], 
                      amount, bid_ask_prices, take_profit, stop_loss)
         time.sleep(1)
     # Open Short Positions
     for i in range(open_short_positions.shape[0]):
+        print(f"Going Short on {open_short_positions["Pair"][i]}")
         openPosition(questradeDriver, open_short_positions["Pair"][i], open_short_positions["Action"][i], 
                      amount, bid_ask_prices, take_profit, stop_loss)
         time.sleep(1)
     # Reverse to Long Positions
     for i in range(reverse_to_long_positions.shape[0]):
+        print(f"Reversing to Long on {reverse_to_long_positions["Pair"][i]}")
         closePosition(questradeDriver, reverse_to_long_positions["Pair"][i], reverse_to_long_positions["Position"][i])
         openPosition(questradeDriver, reverse_to_long_positions["Pair"][i], "Open Long", 
                      amount, bid_ask_prices, take_profit, stop_loss)
         time.sleep(1)
     # Reverse to Short Positions
     for i in range(reverse_to_short_positions.shape[0]):
+        print(f"Reversing to Short on {reverse_to_short_positions["Pair"][i]}")
         closePosition(questradeDriver, reverse_to_short_positions["Pair"][i], reverse_to_short_positions["Position"][i])
         openPosition(questradeDriver, reverse_to_short_positions["Pair"][i], "Open Short", 
                      amount, bid_ask_prices, take_profit, stop_loss)
