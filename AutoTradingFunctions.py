@@ -48,15 +48,12 @@ def getOpenPositions(questradeDriver):
     open_position_table = questradeDriver.find_elements(by=By.CLASS_NAME, value="focusmanager--no-outline")[2]
     rows = open_position_table.find_elements(by=By.CLASS_NAME, value="draggable")
     for i, row in enumerate(rows):
-        if i < len(rows) - 1:
-            symbol_xpath = (f'/html/body/div[1]/div[2]/div[2]/div[2]/div/div[3]/div/section/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/div/div/div[{i+2}]/div/div[2]/div/div/div/div[2]/div/div/div')
-            symbols.append(row.find_element(by=By.XPATH, value=symbol_xpath).text[:7])
-        else:
-            symbols.append("")
-        # symbols.append(row.find_element(by=By.CLASS_NAME, value="instrument__name").text)
+        if i >= len(rows) - 1:
+            break
+        symbols.append(row.find_element(by=By.CLASS_NAME, value="instrument").get_attribute("title"))
         positions.append(row.find_element(by=By.CLASS_NAME, value="tst-col-item-ls").get_attribute("title"))
-        profits.append(row.find_element(by=By.CLASS_NAME, value="v5RPy_directional-number").text)
-
+        profits.append(row.find_elements(by=By.CLASS_NAME, value="directional-number_v5RPy")[1].text)
+        
     open_positions = pd.DataFrame({
         "Pair": symbols,
         "Position": positions,
@@ -64,7 +61,7 @@ def getOpenPositions(questradeDriver):
     })
 
     toggleOpenPositionsWindow(questradeDriver, "close")
-    return open_positions.drop(open_positions.index[-1])
+    return open_positions
 
 def scrapeForesignalComSignals():
     driver = webdriver.Firefox()
