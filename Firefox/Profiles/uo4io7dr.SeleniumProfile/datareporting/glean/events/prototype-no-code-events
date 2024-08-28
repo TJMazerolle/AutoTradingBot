@@ -1,0 +1,5 @@
+{"timestamp":327869,"category":"browser.usage","name":"interaction","extra":{"flow_id":"{ea3a1e62-431a-490e-b518-73ce8b3393d6}","widget_id":"fxa-toolbar-menu-button","glean_timestamp":"1724526494175","source":"nav-bar"}}
+{"timestamp":329397,"category":"browser.usage","name":"interaction","extra":{"source":"nav-bar","widget_id":"PanelUI-menu-button","flow_id":"{ea3a1e62-431a-490e-b518-73ce8b3393d6}","glean_timestamp":"1724526495703"}}
+{"timestamp":334237,"category":"browser.usage","name":"interaction","extra":{"source":"nav-bar","widget_id":"PanelUI-menu-button","flow_id":"{ea3a1e62-431a-490e-b518-73ce8b3393d6}","glean_timestamp":"1724526500543"}}
+{"timestamp":342982,"category":"browser.usage","name":"interaction","extra":{"flow_id":"{ea3a1e62-431a-490e-b518-73ce8b3393d6}","glean_timestamp":"1724526509288","widget_id":"appMenu-passwords-button","source":"app-menu"}}
+{"timestamp":379598,"category":"browser.usage","name":"interaction","extra":{"source":"tabs-bar","widget_id":"cmd-closeWindow","flow_id":"{ea3a1e62-431a-490e-b518-73ce8b3393d6}","glean_timestamp":"1724526545904"}}
