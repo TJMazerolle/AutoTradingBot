@@ -2,7 +2,7 @@ from datetime import datetime
 from AutoTradingFunctions import *
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-def mainScript(signal_timeframe, username, password, method, output_actions = True, update_positions = True):
+def mainScript(signal_timeframe, username, password, output_actions = True, update_positions = True):
 
     # print("Current time:", datetime.now())
 
@@ -19,64 +19,68 @@ def mainScript(signal_timeframe, username, password, method, output_actions = Tr
     questradeLogIn(driver, username=username, password=password)
 
     # Get account value
-    account_value = getAccountValue(driver)
+    try:
+        account_value = getAccountValue(driver)
+        print(f"Account Value: ${account_value}")
+    except:
+        print("Script Failed at getAccountValue()")
 
     # Get bid/ask prices
-    bid_ask_prices = getBidAsk(driver)
+    try:
+        bid_ask_prices = getBidAsk(driver)
+        print("Got Bid/Ask Prices")
+    except:
+        print("Script Failed at getBidAsk()")
 
     # Get Open Positions
-    open_positions = getOpenPositions(driver)
-    print(open_positions)
+    try:
+        open_positions = getOpenPositions(driver)
+        print("Got Open Positions")
+    except:
+        print("Script Failed at getOpenPositions()")
 
-    if method == "investing.com":
-        # Get Signals from investing.com
+    # Get Signals from investing.com
+    try:
         signals = scrapeInvestingComSignals() # note that the function also saves the scrapped data
+        print("Scrapped Signals From investing.com")
+    except:
+        print("Script Failed at scrapeInvestingComSignals()")
 
-        # Get Actions to take on Open Positions
+    # Get Actions to take on Open Positions
+    try:
         actions = getActions(relevant_pairs, open_positions, signals, timeframe=signal_timeframe)
-        close_positions = actions[actions["Action"] == "Close"].reset_index(drop=True)
-        open_long_positions = actions[actions["Action"] == "Open Long"].reset_index(drop=True)
-        open_short_positions = actions[actions["Action"] == "Open Short"].reset_index(drop=True)
-        reverse_to_long_positions = actions[actions["Action"] == "Reverse to Long"].reset_index(drop=True)
-        reverse_to_short_positions = actions[actions["Action"] == "Reverse to Short"].reset_index(drop=True)
+        print("Got Actions to Execute")
+    except:
+        print("Script Failed at getActions()")
+    close_positions = actions[actions["Action"] == "Close"].reset_index(drop=True)
+    open_long_positions = actions[actions["Action"] == "Open Long"].reset_index(drop=True)
+    open_short_positions = actions[actions["Action"] == "Open Short"].reset_index(drop=True)
+    reverse_to_long_positions = actions[actions["Action"] == "Reverse to Long"].reset_index(drop=True)
+    reverse_to_short_positions = actions[actions["Action"] == "Reverse to Short"].reset_index(drop=True)
 
-        # Display Actions about to be Taken
-        if output_actions:
-            print("Close Positions:")
-            display(close_positions)
-            print("\nOpen Long Positions:")
-            display(open_long_positions)
-            print("\nOpen Short Positions:")
-            display(open_short_positions)
-            print("\nReverse to Long Positions:")
-            display(reverse_to_long_positions)
-            print("\nReverse to Short Positions:")
-            display(reverse_to_short_positions)
+    # Display Actions about to be Taken
+    if output_actions:
+        print("Close Positions:")
+        display(close_positions)
+        print("\nOpen Long Positions:")
+        display(open_long_positions)
+        print("\nOpen Short Positions:")
+        display(open_short_positions)
+        print("\nReverse to Long Positions:")
+        display(reverse_to_long_positions)
+        print("\nReverse to Short Positions:")
+        display(reverse_to_short_positions)
 
-        if update_positions:
-            updatePositions(driver, close_positions, open_long_positions, open_short_positions, 
-                            reverse_to_long_positions, reverse_to_short_positions, bid_ask_prices, account_value / 2)
-    
-    if method == "foresignal.com":
-        signals = scrapeForesignalComSignals()
-        # signals.loc[2, "Signal"] = "Sell"
-        # signals.loc[6, "Signal"] = "Buy"
-        print(signals)
-        print(open_positions)
-        for i, pair in enumerate(signals["Pair"]):
-            if signals["Signal"][i] == "Filled":
-                continue
-            if pair in open_positions["Pair"]:
-                continue
-            openPosition(driver, pair, signals["Signal"][i], 10000, bid_ask_prices,
-                        take_profit = signals["TakeProfit"][i], stop_loss = signals["StopLoss"][i])
+    if update_positions:
+        updatePositions(driver, close_positions, open_long_positions, open_short_positions, 
+                        reverse_to_long_positions, reverse_to_short_positions, bid_ask_prices, account_value / 2)
 
     driver.quit()
     
 def DailyUpdate():
     while True:
         try:
-            mainScript("Daily", "qfx_1933b", "i58re42", "investing.com", output_actions=False, update_positions = True)
+            mainScript("Daily", "qfx_454ff", "c63js87", output_actions=False, update_positions = True)
             output_text = f"Completed Daily Run at {datetime.now()}"
             print(output_text)
             print("=" * len(output_text))
@@ -90,7 +94,7 @@ def WeeklyUpdate():
     current_time = datetime.now().strftime("%H:%M")
     while True:
         try:
-            mainScript("Weekly", "qfx_efe05", "c57fj49", "investing.com", output_actions = False, update_positions = True)
+            mainScript("Weekly", "qfx_efe05", "c57fj49", output_actions = False, update_positions = True)
             output_text = f"Completed Weekly Run at {datetime.now()}"
             print(output_text)
             print("=" * len(output_text))
@@ -101,4 +105,4 @@ def WeeklyUpdate():
             print(f"TimeoutException at {datetime.now}. Restarting Script.")
 
 def MiscTests():
-    mainScript("Daily", "qfx_f4b8e", "n52ym6", "investing.com", output_actions = True)
+    mainScript("Daily", "qfx_f4b8e", "n52ym6", output_actions = True)
